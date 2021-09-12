@@ -1,28 +1,44 @@
 import React from 'react';
 import PropTypes from "prop-types";
 import { render } from '@testing-library/react';
+import axios from "axios";
+import Movie from "./Movie";
 
-
-class App extends React.Component{
-  state={
-    count: 0
-  }
-
-  add = () => {
-    this.setState(current => ({count: current.count+1}));
+class App extends React.Component {
+  state = {
+    isLoading: true,
+    movies: []
   };
-  minus = () =>{
-    this.setState(current => ({count:current.count-1}));
-  }
-  render(){
-    return(
-    <div>
-      <h1>Tne numner is: {this.state.count}</h1>
-      <button onClick={this.add}>Add</button>
-      <button onClick={this.minus}>Minus</button>
-    </div>
 
-    )}
+  getMovies = async () => {
+    const {
+      data: {
+        data: { movies }
+      }
+    } = await axios.get("https://yts.mx/api/v2/list_movies.json?sort_by=rating");
+    this.setState({ movies, isLoading: false });
+  };
+  componentDidMount() {
+    this.getMovies();
+  }
+
+
+  render() {
+    const { isLoading, movies } = this.state;
+    return <div>{isLoading ? "Loading..." : movies.map(movie => {
+      return(
+      <Movie
+        key={movie.id}
+        id={movie.id} 
+        year={movie.year} 
+        title={movie.title} 
+        summary={movie.summary} 
+        poster={movie.medium_cover_image} 
+      />
+      );
+    })}
+  </div>
+  }
 }
 
 export default App;
